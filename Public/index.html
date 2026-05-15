@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>QuimLab AI</title>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+
+      background:#050816;
+
+      color:white;
+
+      font-family:
+      Arial,
+      Helvetica,
+      sans-serif;
+
+      min-height:100vh;
+
+      padding:40px;
+    }
+
+    .container{
+
+      max-width:1000px;
+
+      margin:auto;
+    }
+
+    h1{
+
+      font-size:48px;
+
+      margin-bottom:10px;
+
+      color:#00d4ff;
+    }
+
+    .subtitle{
+
+      color:#8ea3b0;
+
+      margin-bottom:40px;
+    }
+
+    .card{
+
+      background:#0b1220;
+
+      border:1px solid #1f2d3d;
+
+      border-radius:16px;
+
+      padding:25px;
+
+      margin-bottom:25px;
+
+      box-shadow:
+      0 0 25px rgba(0,0,0,0.4);
+    }
+
+    label{
+
+      display:block;
+
+      margin-bottom:12px;
+
+      color:#8ea3b0;
+    }
+
+    select,
+    input{
+
+      width:100%;
+
+      padding:16px;
+
+      background:#020617;
+
+      border:1px solid #243447;
+
+      border-radius:10px;
+
+      color:white;
+
+      font-size:16px;
+
+      margin-bottom:20px;
+    }
+
+    button{
+
+      width:100%;
+
+      padding:18px;
+
+      border:none;
+
+      border-radius:10px;
+
+      background:#00d4ff;
+
+      color:black;
+
+      font-size:18px;
+
+      font-weight:bold;
+
+      cursor:pointer;
+
+      transition:0.3s;
+    }
+
+    button:hover{
+
+      transform:scale(1.02);
+
+      background:#35ddff;
+    }
+
+    .result{
+
+      background:#020617;
+
+      border:1px solid #243447;
+
+      border-radius:12px;
+
+      padding:20px;
+
+      min-height:200px;
+
+      white-space:pre-wrap;
+
+      line-height:1.6;
+
+      overflow:auto;
+    }
+
+    .loading{
+
+      color:#00d4ff;
+    }
+
+    .error{
+
+      color:#ff5c5c;
+    }
+
+  .history-item{
+
+  background:#020617;
+
+  border:1px solid #243447;
+
+  padding:12px;
+
+  border-radius:8px;
+
+  margin-bottom:10px;
+
+  cursor:pointer;
+
+  transition:0.2s;
+}
+
+.history-item:hover{
+
+  background:#0f172a;
+}
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>QuimLab AI</h1>
+
+    <p class="subtitle">
+      Nomenclatura química usando Groq, Together AI y OpenRouter
+    </p>
+
+    <div class="card">
+
+      <label>
+        Selecciona la IA
+      </label>
+
+      <select id="aiProvider">
+
+       <option value="groq">
+  Groq
+</option>
+
+<option value="openrouter">
+  OpenRouter
+</option>
+
+<option value="together">
+  Together AI
+</option>
+
+      </select>
+
+      <label>
+        Fórmula o molécula
+      </label>
+
+      <input
+        id="mol"
+        placeholder="Ejemplo: CH3-CH2-OH"
+      >
+
+      <button onclick="analizar()">
+        Analizar Molécula
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <h2 style="margin-bottom:20px;">
+        Resultado
+      </h2>
+
+      <div
+        id="out"
+        class="result"
+      >
+
+Esperando análisis...
+
+      </div>
+
+    </div>
+<div class="card">
+
+  <h2 style="margin-bottom:20px;">
+    Historial
+  </h2>
+
+  <div id="history"></div>
+
+</div>
+  </div>
+
+  <script>
+    let historial = [];
+    async function analizar(){
+
+      const mol =
+        document
+        .getElementById('mol')
+        .value
+        .trim();
+
+      const provider =
+        document
+        .getElementById('aiProvider')
+        .value;
+
+      const out =
+        document
+        .getElementById('out');
+
+      if(!mol){
+
+        out.innerHTML =
+          '<span class="error">Debes ingresar una molécula.</span>';
+
+        return;
+      }
+
+      out.innerHTML =
+        '<span class="loading">Analizando molécula...</span>';
+
+      const SYSTEM = `
+
+Eres un químico experto en nomenclatura IUPAC y química orgánica.
+
+Debes analizar la molécula y responder ÚNICAMENTE con este formato:
+
+NOMBRE IUPAC:
+(nombre)
+
+GRUPO FUNCIONAL:
+(alcohol, cetona, ácido carboxílico, aldehído, amina, etc)
+
+CANTIDAD DE CARBONOS:
+(número)
+
+CANTIDAD DE HIDRÓGENOS:
+(número)
+
+SUSTITUYENTES:
+(si tiene, indicar nombre y posición. Si no tiene, escribir "Ninguno")
+
+REACCIONES POSIBLES:
+(lista breve de reacciones químicas importantes que puede experimentar el compuesto)
+
+USOS EN LA ACTUALIDAD:
+(Mencionar al menos 3 usos minimos del compuesto ya sea en la industria o en la vida diaria, enumerarlos en una lista y mencionar brevemente el como, porque.)
+
+No uses markdown.
+No uses símbolos innecesarios.
+Responde en español.
+`;
+
+      const USER = `
+Molécula:
+${mol}
+`;
+
+      let endpoint = '';
+
+      let body = {};
+
+      /* =====================================
+         GROQ
+      ===================================== */
+      if(provider === 'groq'){
+
+  endpoint =
+    '/api/groq';
+
+  body = {
+
+    model:
+      'llama-3.3-70b-versatile',
+
+    messages: [
+
+      {
+        role: 'system',
+        content: SYSTEM
+      },
+
+      {
+        role: 'user',
+        content: USER
+      }
+    ],
+
+    temperature:0.2
+  };
+}
+      /* =====================================
+         OPENROUTER
+      ===================================== */
+      else if(provider === 'openrouter'){
+
+  endpoint =
+    '/api/openrouter';
+
+  body = {
+
+    model:
+      'openai/gpt-oss-20b:free',
+
+    messages: [
+
+      {
+        role: 'system',
+        content: SYSTEM
+      },
+
+      {
+        role: 'user',
+        content: USER
+      }
+    ]
+  };
+}
+/* =====================================
+   TOGETHER
+===================================== */
+else if(provider === 'together'){
+
+  endpoint =
+    '/api/together';
+
+  body = {
+
+    model:
+      'meta-llama/Llama-3.3-70B-Instruct-Turbo-Free',
+
+    messages:[
+
+      {
+        role:'system',
+        content:SYSTEM
+      },
+
+      {
+        role:'user',
+        content:USER
+      }
+    ],
+
+    temperature:0.2,
+
+    max_tokens:1000
+  };
+}
+
+try{
+
+  const resp = await fetch(
+
+    endpoint,
+
+    {
+
+      method:'POST',
+
+      headers:{
+        'Content-Type':'application/json'
+      },
+
+      body:JSON.stringify(body)
+    }
+  );
+
+  const data =
+    await resp.json();
+
+  console.log("GROQ DATA:", data);
+
+  let txt = '';
+
+        /* ==============================
+           GROQ
+        ============================== */
+        if(provider === 'groq'){
+
+  if(data.error){
+
+    throw new Error(
+      data.error.message
+    );
+  }
+
+  console.log(
+    "CHOICE:",
+    data.choices[0]
+  );
+
+  txt =
+    data?.choices?.[0]
+    ?.message?.content || '';
+
+  console.log(
+    "TXT:",
+    txt
+  );
+}
+
+        /* ==============================
+           OPENROUTER
+        ============================== */
+        else if(provider === 'openrouter'){
+
+          if(data.error){
+
+  throw new Error(
+    data.error.message
+  );
+}
+
+console.log(
+  "CHOICE:",
+  data.choices[0]
+);
+
+txt =
+  data.choices[0]
+  .message
+  .content;
+
+console.log(
+  "TXT:",
+  txt
+);
+        }
+
+        /* ==============================
+           Together
+        ============================== */
+        else if(provider === 'together'){
+
+         if(data.error){
+
+  throw new Error(
+    data.error.message
+  );
+}
+
+txt =
+  data?.candidates?.[0]
+  ?.content?.parts?.[0]
+  ?.text || '';
+        }
+
+        out.textContent = txt;
+if(!historial.includes(mol)){
+
+  historial.unshift(mol);
+}
+
+renderHistorial();
+      }
+
+      catch(err){
+
+        console.error(err);
+
+        out.innerHTML =
+
+          '<span class="error">' +
+
+          'ERROR:\n\n' +
+
+          err.message +
+
+          '</span>';
+      }
+    }
+function renderHistorial(){
+
+  const historyDiv =
+
+    document.getElementById(
+      'history'
+    );
+
+  historyDiv.innerHTML = '';
+
+  historial.forEach(mol => {
+
+    const item =
+      document.createElement('div');
+
+    item.className =
+      'history-item';
+
+    item.textContent =
+      mol;
+
+    item.onclick = () => {
+
+      document
+      .getElementById('mol')
+      .value = mol;
+    };
+
+    historyDiv.appendChild(item);
+  });
+}
+  </script>
+
+</body>
+
+</html>
