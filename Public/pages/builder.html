@@ -481,6 +481,78 @@ function actualizarPosiciones(){
 }
 
 actualizarPosiciones();
+async function construir(){
+
+  const resultado =
+
+    document.getElementById(
+      'resultado'
+    );
+
+  resultado.innerHTML =
+
+    '<span class="loading">Construyendo molécula...</span>';
+
+  try{
+
+    const response = await fetch(
+
+      '/api/build',
+
+      {
+
+        method:'POST',
+
+        headers:{
+          'Content-Type':'application/json'
+        },
+
+        body:JSON.stringify({
+
+          carbonos:
+            carbonos.value,
+
+          grupo:
+            grupo.value,
+
+          sustituyente:
+            sustituyente.value,
+
+          posicion:
+            posicion.value
+        })
+      }
+    );
+
+    const data =
+      await response.json();
+
+    console.log(data);
+
+    const txt =
+
+      data?.choices?.[0]
+      ?.message?.content ||
+
+      'No se recibió respuesta.';
+
+    resultado.textContent =
+      txt;
+  }
+
+  catch(err){
+
+    console.error(err);
+
+    resultado.innerHTML =
+
+      '<span class="error">' +
+
+      err.message +
+
+      '</span>';
+  }
+}
 </script>
 
 </body>
