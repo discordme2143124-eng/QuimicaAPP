@@ -529,12 +529,34 @@ async function construir(){
 
     console.log(data);
 
-    const txt =
+console.log(data);
 
-      data?.choices?.[0]
-      ?.message?.content ||
+if(data.error){
 
-      'No se recibió respuesta.';
+  resultado.innerHTML =
+
+    '<span class="error">' +
+
+    data.error.message +
+
+    '</span>';
+
+  return;
+}
+
+const txt =
+
+  data.choices &&
+  data.choices[0] &&
+  data.choices[0].message &&
+  data.choices[0].message.content
+
+  ? data.choices[0].message.content
+
+  : JSON.stringify(data, null, 2);
+
+resultado.textContent =
+  txt;
 
     resultado.textContent =
       txt;
