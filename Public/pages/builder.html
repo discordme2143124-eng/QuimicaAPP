@@ -525,9 +525,7 @@ async function construir(){
     );
 
     const data =
-      await response.json();
-
-    console.log(data);
+  await response.json();
 
 console.log(data);
 
@@ -545,21 +543,10 @@ if(data.error){
 }
 
 const txt =
-
-  data.choices &&
-  data.choices[0] &&
-  data.choices[0].message &&
-  data.choices[0].message.content
-
-  ? data.choices[0].message.content
-
-  : JSON.stringify(data, null, 2);
+  data.resultado;
 
 resultado.textContent =
   txt;
-
-    resultado.textContent =
-      txt;
   }
 
   catch(err){
