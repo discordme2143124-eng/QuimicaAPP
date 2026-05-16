@@ -353,7 +353,11 @@
           Posición del sustituyente
         </label>
 
-        <select id="posicion"></select>
+      <select id="posicion">
+
+  <option value="1">1</option>
+
+</select>
 
         <button onclick="construir()">
           Construir Molécula
@@ -439,99 +443,39 @@ actualizarPreview;
 sustituyente.onchange =
 actualizarPreview;
 
-posicion.oninput =
+posicion.onchange =
 actualizarPreview;
 
 function actualizarPosiciones(){
 
-  const carbonos = parseInt(
+  const carbonos = Number(
 
-    document
-    .getElementById('carbonos')
-    .value
+    document.getElementById(
+      'carbonos'
+    ).value
   );
 
-  const select =
+  const posicion =
 
-    document
-    .getElementById('posicion');
+    document.getElementById(
+      'posicion'
+    );
 
-  select.innerHTML = '';
+  posicion.innerHTML = '';
 
   for(let i = 1; i <= carbonos; i++){
 
-    const option =
-      document.createElement('option');
+    posicion.innerHTML += `
 
-    option.value = i;
+      <option value="${i}">
+        ${i}
+      </option>
 
-    option.textContent = i;
-
-    select.appendChild(option);
+    `;
   }
+
+  actualizarPreview();
 }
-async function construir(){
-
-  const resultado =
-    document.getElementById(
-      'resultado'
-    );
-
-  resultado.innerHTML =
-    '<span class="loading">Construyendo molécula...</span>';
-
-  try{
-
-    const resp = await fetch(
-
-      '/api/build',
-
-      {
-
-        method:'POST',
-
-        headers:{
-          'Content-Type':'application/json'
-        },
-
-        body:JSON.stringify({
-
-          carbonos:
-            carbonos.value,
-
-          grupo:
-            grupo.value,
-
-          sustituyente:
-            sustituyente.value,
-
-          posicion:
-            posicion.value
-        })
-      }
-    );
-
-    const data =
-      await resp.json();
-
-    resultado.textContent =
-      data.resultado;
-
-  }
-
-  catch(err){
-
-    resultado.innerHTML =
-
-      '<span class="error">' +
-
-      err.message +
-
-      '</span>';
-  }
-}
-
-actualizarPreview();
 
 actualizarPosiciones();
 </script>
