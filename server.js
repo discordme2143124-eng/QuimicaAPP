@@ -1,3 +1,122 @@
+/* =========================================
+   START SERVER
+========================================= */
+/* =========================================
+   BUILDER IA
+========================================= */
+
+app.post('/api/build', async (req, res) => {
+
+  try{
+
+    const {
+
+      carbonos,
+      grupo,
+      sustituyente,
+      posicion
+
+    } = req.body;
+
+    const prompt = `
+
+Construye una molécula orgánica con:
+
+- ${carbonos} carbonos
+- grupo funcional ${grupo}
+- sustituyente ${sustituyente}
+- posición ${posicion}
+
+Responde EXACTAMENTE con este formato:
+
+NOMBRE IUPAC:
+(nombre)
+
+FÓRMULA SEMIDESARROLLADA:
+(formula)
+
+EXPLICACIÓN:
+(explicacion breve)
+
+PROPIEDADES:
+(propiedades importantes)
+
+USOS:
+(lista)
+
+REACCIONES POSIBLES:
+(lista)
+
+No uses markdown.
+Responde en español.
+`;
+
+    const response = await fetch(
+
+      'https://api.groq.com/openai/v1/chat/completions',
+
+      {
+
+        method:'POST',
+
+        headers:{
+
+          'Content-Type':'application/json',
+
+          Authorization:
+            `Bearer ${process.env.GROQ_API_KEY}`
+        },
+
+        body:JSON.stringify({
+
+          model:
+            'llama-3.3-70b-versatile',
+
+          messages:[
+
+            {
+              role:'system',
+              content:
+              'Eres un químico experto.'
+            },
+
+            {
+              role:'user',
+              content:prompt
+            }
+          ],
+
+          temperature:0.2
+        })
+      }
+    );
+
+    const data =
+      await response.json();
+
+    const resultado =
+
+      data?.choices?.[0]
+      ?.message?.content ||
+
+      'No se pudo generar.';
+
+    res.json({
+      resultado
+    });
+  }
+
+  catch(err){
+
+    console.error(err);
+
+    res.status(500).json({
+
+      error:err.message
+    });
+  }
+});
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
