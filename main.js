@@ -1,46 +1,64 @@
 import { app, BrowserWindow } from 'electron';
 
+let splash;
 let mainWindow;
 
-/* =========================================
-   CREAR VENTANA
-========================================= */
+function createSplash(){
+
+  splash = new BrowserWindow({
+
+    width:500,
+    height:300,
+
+    frame:false,
+
+    alwaysOnTop:true,
+
+    transparent:false,
+
+    backgroundColor:'#050816'
+  });
+
+  splash.loadFile(
+    'Public/splash.html'
+  );
+}
 
 function createWindow(){
 
   mainWindow = new BrowserWindow({
 
     width:1200,
-
     height:900,
 
     backgroundColor:'#050816',
 
+    show:false,
+
     webPreferences:{
-
       nodeIntegration:false,
-
       contextIsolation:true
     }
   });
 
   mainWindow.loadURL(
-    'https://quimicaapp-production.up.railway.app'
+    'https://quimicaapp-production-8943.up.railway.app/'
   );
-}
 
-/* =========================================
-   APP READY
-========================================= */
+  mainWindow.once('ready-to-show', () => {
+
+    splash.close();
+
+    mainWindow.show();
+  });
+}
 
 app.whenReady().then(() => {
 
+  createSplash();
+
   createWindow();
 });
-
-/* =========================================
-   CERRAR TODO
-========================================= */
 
 app.on('window-all-closed', () => {
 

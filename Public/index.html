@@ -199,6 +199,15 @@
       Nomenclatura química usando Groq, Together AI y OpenRouter
     </p>
 
+<div style="margin-bottom:20px;">
+
+  <button onclick="abrirBuilder()">
+
+    Constructor Molecular
+
+  </button>
+
+</div>
     <div class="card">
 
       <label>
@@ -300,7 +309,7 @@ Eres un químico experto en nomenclatura IUPAC y química orgánica.
 Debes analizar la molécula y responder ÚNICAMENTE con este formato:
 
 NOMBRE IUPAC:
-(nombre)
+(nombre) (Revisa el nombre dos veces antes de dar respuesta, Si el usuario menciona una molecula ejemplo ch3: es metil y no mentano, guiate por la cant de carbonos)
 
 GRUPO FUNCIONAL:
 (alcohol, cetona, ácido carboxílico, aldehído, amina, etc)
@@ -575,6 +584,12 @@ function renderHistorial(){
     historyDiv.appendChild(item);
   });
 }
+function abrirBuilder(){
+
+  window.location.href =
+    '/pages/builder.html';
+}
+
   </script>
 
 </body>
