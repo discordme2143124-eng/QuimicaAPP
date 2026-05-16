@@ -434,18 +434,21 @@ sustituyente ${sustituyente.value}
 en posición ${posicion.value}.`;
 }
 
-carbonos.onchange =
-actualizarPreview;
-
 grupo.onchange =
 actualizarPreview;
 
 sustituyente.onchange =
 actualizarPreview;
 
-posicion.onchange =
+posicion.oninput =
 actualizarPreview;
 
+carbonos.onchange = () => {
+
+  actualizarPosiciones();
+
+  actualizarPreview();
+};
 function actualizarPosiciones(){
 
   const carbonos = Number(
