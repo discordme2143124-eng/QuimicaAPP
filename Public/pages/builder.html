@@ -264,7 +264,9 @@
           Cantidad de carbonos
         </label>
 
-        <select id="carbonos">
+        <select id="carbonos"
+  onchange="actualizarPosiciones()"
+>
 
           <option value="1">1</option>
           <option value="2">2</option>
@@ -351,13 +353,7 @@
           Posición del sustituyente
         </label>
 
-        <input
-          id="posicion"
-          type="number"
-          min="1"
-          max="10"
-          value="1"
-        >
+        <select id="posicion"></select>
 
         <button onclick="construir()">
           Construir Molécula
@@ -446,6 +442,34 @@ actualizarPreview;
 posicion.oninput =
 actualizarPreview;
 
+function actualizarPosiciones(){
+
+  const carbonos = parseInt(
+
+    document
+    .getElementById('carbonos')
+    .value
+  );
+
+  const select =
+
+    document
+    .getElementById('posicion');
+
+  select.innerHTML = '';
+
+  for(let i = 1; i <= carbonos; i++){
+
+    const option =
+      document.createElement('option');
+
+    option.value = i;
+
+    option.textContent = i;
+
+    select.appendChild(option);
+  }
+}
 async function construir(){
 
   const resultado =
@@ -509,6 +533,7 @@ async function construir(){
 
 actualizarPreview();
 
+actualizarPosiciones();
 </script>
 
 </body>
